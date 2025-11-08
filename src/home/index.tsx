@@ -1,22 +1,22 @@
 import { LegendList } from "@legendapp/list"
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { Alert, Image, StyleSheet, Text, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
-import { fetchPopular, posterUrl } from "../api/movies"
-import { MovieResultItem } from "../api/types"
+import { Movie } from "../domain/types"
+import { movieRepository } from "../repositories/moviesRepository"
+import { posterUrl } from "../services/movies"
 
 const CARD_WIDTH = 140
 const CARD_HEIGHT = 210
-const CARD_SPACING = 12
 
 export function Home() {
-    const [movies, setMovies] = useState<MovieResultItem[]>([])
+    const [movies, setMovies] = useState<Movie[]>([])
 
     useEffect(() => {
         const getPopularMovies = async () => {
             try {
-                const response = await fetchPopular()
+                const response = await movieRepository.fetchPopular()
                 setMovies(response.results)
             } catch (error) {
                 Alert.alert("Error", "Error fetching popular movies" + error)
@@ -26,18 +26,35 @@ export function Home() {
         getPopularMovies()
     }, [])
 
-    const renderItem = ({ item }: { item: MovieResultItem }) => (
-        <View style={styles.card}>
-            {item.poster_path && (
-                <Image
-                    source={{ uri: posterUrl(item.poster_path) ?? undefined }}
-                    style={styles.poster}
-                />
-            )}
-            <Text style={styles.title} numberOfLines={2}>
-                {item.title}
-            </Text>
-        </View>
+    const renderItem = useCallback(
+        ({ item }: { item: Movie }) => (
+            <View style={styles.card}>
+                {item.poster_path && (
+                    <Image
+                        source={{
+                            uri: posterUrl(item.poster_path) ?? undefined
+                        }}
+                        style={styles.poster}
+                    />
+                )}
+                <Text style={styles.title} numberOfLines={2}>
+                    {item.title}
+                </Text>
+            </View>
+        ),
+        []
+    )
+
+    const keyExtractor = useCallback((item: Movie) => item.id.toString(), [])
+
+    const contentContainerStyle = useMemo(
+        () => ({ paddingBottom: 20, paddingHorizontal: 12 }),
+        []
+    )
+
+    const itemSeparatorStyle = useMemo(
+        () => ({ paddingBottom: 20, paddingHorizontal: 12 }),
+        []
     )
 
     return (
@@ -46,13 +63,13 @@ export function Home() {
             <LegendList
                 data={movies ?? []}
                 renderItem={renderItem}
-                keyExtractor={item => String(item.id)}
+                keyExtractor={keyExtractor}
                 recycleItems
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ paddingHorizontal: CARD_SPACING }}
+                contentContainerStyle={contentContainerStyle}
                 ItemSeparatorComponent={() => (
-                    <View style={{ width: CARD_SPACING }} />
+                    <View style={itemSeparatorStyle} />
                 )}
             />
         </SafeAreaView>

@@ -1,9 +1,9 @@
 import { render, waitFor } from "@testing-library/react-native"
 
-import { fetchPopular } from "../../api/movies"
+import { movieRepository } from "../../repositories/moviesRepository"
 import { Home } from ".."
 
-jest.mock("../../api/movies", () => ({
+jest.mock("../../repositories/moviesRepository", () => ({
     fetchPopular: jest.fn(),
     posterUrl: jest.fn(path =>
         path ? `https://image.tmdb.org/t/p/w500${path}` : null
@@ -13,7 +13,9 @@ jest.mock("../../api/movies", () => ({
 describe("Home", () => {
     beforeEach(() => {
         jest.clearAllMocks()
-        ;(fetchPopular as jest.Mock).mockResolvedValue({ results: [] })
+        ;(movieRepository.fetchPopular as jest.Mock).mockResolvedValue({
+            results: []
+        })
     })
 
     it("renders correctly", async () => {
