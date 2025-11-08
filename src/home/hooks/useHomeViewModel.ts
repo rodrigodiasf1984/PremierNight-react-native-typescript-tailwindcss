@@ -1,11 +1,13 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Alert } from "react-native"
 
 import { Movie } from "../../domain/types"
 import { movieRepository } from "../../repositories/moviesRepository"
 
 export function useHomeViewModel() {
-    const [movies, setMovies] = useState<Movie[]>([])
+    const [popular, setPopular] = useState<Movie[]>([])
+    const [topRated, setTopRated] = useState<Movie[]>([])
+    const [upcoming, setUpcoming] = useState<Movie[]>([])
     const [loading, setLoading] = useState(false)
     const [search, setSearch] = useState("")
 
@@ -14,12 +16,18 @@ export function useHomeViewModel() {
         const getMovies = async () => {
             setLoading(true)
             try {
-                const response = await movieRepository.fetchPopular()
-                if (mounted && response.results) {
-                    setMovies(response.results)
+                const [pop, top, up] = await Promise.all([
+                    movieRepository.fetchPopular(),
+                    movieRepository.fetchTopRated(),
+                    movieRepository.fetchUpcoming()
+                ])
+                if (mounted) {
+                    setPopular(pop.results ?? [])
+                    setTopRated(top.results ?? [])
+                    setUpcoming(up.results ?? [])
                 }
             } catch (error) {
-                Alert.alert("Error", "Failed to load popular movies" + error)
+                Alert.alert("Error", "Failed to load movies: " + error)
             } finally {
                 if (mounted) setLoading(false)
             }
@@ -30,19 +38,25 @@ export function useHomeViewModel() {
         }
     }, [])
 
-    const filteredMovies = useMemo(() => {
-        if (!search) return movies
-        return movies.filter(movie =>
-            (movie.title.toLocaleLowerCase() || "").includes(
-                search.toLocaleLowerCase()
+    const filteredMovies = useCallback(
+        (movieList: Movie[]) => {
+            if (!search) return movieList
+            const normalized = search.toLowerCase()
+            return movieList.filter(({ title }) =>
+                title.toLowerCase().includes(normalized)
             )
-        )
-    }, [movies, search])
-
-    const onSearchChange = useCallback(
-        (searchText: string) => setSearch(searchText),
-        []
+        },
+        [search]
     )
 
-    return { movies: filteredMovies, loading, search, onSearchChange }
+    const onSearchChange = useCallback((text: string) => setSearch(text), [])
+
+    return {
+        popular: filteredMovies(popular),
+        topRated: filteredMovies(topRated),
+        upcoming: filteredMovies(upcoming),
+        loading,
+        search,
+        onSearchChange
+    }
 }

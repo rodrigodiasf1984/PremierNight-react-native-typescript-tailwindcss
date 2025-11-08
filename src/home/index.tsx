@@ -1,46 +1,23 @@
-import { LegendList } from "@legendapp/list"
-import React, { useCallback, useEffect, useMemo, useState } from "react"
-import { Alert, Image, StyleSheet, Text, View } from "react-native"
+import React, { useCallback, useMemo } from "react"
+import { ScrollView, Text, TextInput, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
+import { MovieCard } from "../components/movie-card"
 import { Movie } from "../domain/types"
-import { movieRepository } from "../repositories/moviesRepository"
-import { posterUrl } from "../services/movies"
+import { useHomeViewModel } from "./hooks/useHomeViewModel"
+import { LegendListSection } from "./legend-list-section"
+import { styles } from "./styles"
 
 const CARD_WIDTH = 140
-const CARD_HEIGHT = 210
+const SPACING = 12
 
 export function Home() {
-    const [movies, setMovies] = useState<Movie[]>([])
-
-    useEffect(() => {
-        const getPopularMovies = async () => {
-            try {
-                const response = await movieRepository.fetchPopular()
-                setMovies(response.results)
-            } catch (error) {
-                Alert.alert("Error", "Error fetching popular movies" + error)
-            }
-        }
-
-        getPopularMovies()
-    }, [])
+    const { loading, search, onSearchChange, popular, topRated, upcoming } =
+        useHomeViewModel()
 
     const renderItem = useCallback(
         ({ item }: { item: Movie }) => (
-            <View style={styles.card}>
-                {item.poster_path && (
-                    <Image
-                        source={{
-                            uri: posterUrl(item.poster_path) ?? undefined
-                        }}
-                        style={styles.poster}
-                    />
-                )}
-                <Text style={styles.title} numberOfLines={2}>
-                    {item.title}
-                </Text>
-            </View>
+            <MovieCard movie={item} width={CARD_WIDTH} />
         ),
         []
     )
@@ -48,57 +25,63 @@ export function Home() {
     const keyExtractor = useCallback((item: Movie) => item.id.toString(), [])
 
     const contentContainerStyle = useMemo(
-        () => ({ paddingBottom: 20, paddingHorizontal: 12 }),
+        () => ({ paddingHorizontal: SPACING }),
         []
     )
 
-    const itemSeparatorStyle = useMemo(
-        () => ({ paddingBottom: 20, paddingHorizontal: 12 }),
+    const itemSeparatorComponent = useCallback(
+        () => <View style={{ width: 12 }} />,
         []
     )
 
     return (
         <SafeAreaView testID="safe-area-view-home" style={styles.container}>
             <Text style={styles.header}>Spotlight Home</Text>
-            <LegendList
-                data={movies ?? []}
-                renderItem={renderItem}
-                keyExtractor={keyExtractor}
-                recycleItems
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={contentContainerStyle}
-                ItemSeparatorComponent={() => (
-                    <View style={itemSeparatorStyle} />
-                )}
+
+            <TextInput
+                placeholder="Search by title..."
+                value={search}
+                onChangeText={onSearchChange}
+                style={styles.search}
+                returnKeyType="search"
             />
+
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 50 }}
+            >
+                {popular.length > 0 && (
+                    <LegendListSection
+                        title="Popular"
+                        data={popular}
+                        renderItem={renderItem}
+                        keyExtractor={keyExtractor}
+                        contentContainerStyle={contentContainerStyle}
+                        itemSeparatorComponent={itemSeparatorComponent}
+                    />
+                )}
+                {topRated.length > 0 && (
+                    <LegendListSection
+                        title="Top Rated"
+                        data={topRated}
+                        renderItem={renderItem}
+                        keyExtractor={keyExtractor}
+                        contentContainerStyle={contentContainerStyle}
+                        itemSeparatorComponent={itemSeparatorComponent}
+                    />
+                )}
+                {upcoming.length > 0 && (
+                    <LegendListSection
+                        title="Upcoming"
+                        data={upcoming}
+                        renderItem={renderItem}
+                        keyExtractor={keyExtractor}
+                        contentContainerStyle={contentContainerStyle}
+                        itemSeparatorComponent={itemSeparatorComponent}
+                    />
+                )}
+                {loading && <Text style={styles.loading}>Loading...</Text>}
+            </ScrollView>
         </SafeAreaView>
     )
 }
-
-const styles = StyleSheet.create({
-    card: {
-        alignItems: "center",
-        width: CARD_WIDTH
-    },
-    // eslint-disable-next-line react-native/no-color-literals
-    container: { backgroundColor: "white", flex: 1, paddingTop: 16 },
-    header: {
-        fontSize: 22,
-        fontWeight: "bold",
-        marginBottom: 16,
-        marginLeft: 16
-    },
-    poster: {
-        borderRadius: 10,
-        height: CARD_HEIGHT,
-        resizeMode: "cover",
-        width: CARD_WIDTH
-    },
-    title: {
-        fontSize: 14,
-        fontWeight: "500",
-        marginTop: 6,
-        textAlign: "center"
-    }
-})
