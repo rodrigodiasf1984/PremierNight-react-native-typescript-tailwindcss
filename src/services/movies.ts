@@ -20,6 +20,6 @@ export async function fetchMovieDetails(movieId: number): Promise<MovieDetail> {
     return data
 }
 
-export function posterUrl(path: string | null, size = "w500") {
+export function posterUrl(path: string, size: string) {
     return path ? `https://image.tmdb.org/t/p/${size}${path}` : null
 }
