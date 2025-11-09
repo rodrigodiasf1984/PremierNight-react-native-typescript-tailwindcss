@@ -53,9 +53,11 @@ View-model hooks (useHomeViewModel, useDetailViewModel,useDetailsNavigation ) en
 
 Performance: LegendList with stable keys, useCallback and useMemo to avoid re-renders. Poster images are cached by the native image loader; swap in react-native-fast-image for improved caching if desired.
 
-Trade-offs: Due to time, focus was on functionality and clean separation — advanced transitions (Reanimated coverflow) were left as a nice-to-have.
+# Trade-offs:
 
-Outstanding / next steps
+Due to time, focus was on functionality and clean separation — advanced transitions (Reanimated coverflow) were left as a nice-to-have.
+
+# Outstanding / next steps
 
 Add more robust error UI and retry flows.
 
@@ -69,7 +71,7 @@ Add tailwindCSS to speed development.
 
 Add detox for E2E.
 
-Notes for reviewers
+# Notes for reviewers
 
 Home -> tap a poster -> opens Detail.
 
