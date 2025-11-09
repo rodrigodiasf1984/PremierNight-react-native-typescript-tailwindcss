@@ -2,7 +2,7 @@ import { LegendList } from "@legendapp/list"
 import React from "react"
 import { Text, View } from "react-native"
 
-import { Movie } from "../../domain/types"
+import { Movie } from "../../../domain/types"
 import { styles } from "../styles"
 
 type LegendListSectionProps = {

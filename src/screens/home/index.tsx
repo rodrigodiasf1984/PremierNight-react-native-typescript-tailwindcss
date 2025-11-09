@@ -2,8 +2,9 @@ import React, { useCallback, useMemo } from "react"
 import { ScrollView, Text, TextInput, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
-import { MovieCard } from "../components/movie-card"
-import { Movie } from "../domain/types"
+import { MovieCard } from "../../components/movie-card"
+import { Movie } from "../../domain/types"
+import { useDetailsNavigation } from "./hooks/useDetailsNavigation"
 import { useHomeViewModel } from "./hooks/useHomeViewModel"
 import { LegendListSection } from "./legend-list-section"
 import { styles } from "./styles"
@@ -14,12 +15,17 @@ const SPACING = 12
 export function Home() {
     const { loading, search, onSearchChange, popular, topRated, upcoming } =
         useHomeViewModel()
+    const { openMovieDetails } = useDetailsNavigation()
 
     const renderItem = useCallback(
         ({ item }: { item: Movie }) => (
-            <MovieCard movie={item} width={CARD_WIDTH} />
+            <MovieCard
+                movie={item}
+                width={CARD_WIDTH}
+                onPress={() => openMovieDetails(item.id)}
+            />
         ),
-        []
+        [openMovieDetails]
     )
 
     const keyExtractor = useCallback((item: Movie) => item.id.toString(), [])

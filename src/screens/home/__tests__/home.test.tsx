@@ -1,13 +1,20 @@
 import { render, waitFor } from "@testing-library/react-native"
+import React from "react"
 
-import { movieRepository } from "../../repositories/moviesRepository"
+import { movieRepository } from "../../../repositories/moviesRepository"
 import { Home } from ".."
 
-jest.mock("../../repositories/moviesRepository", () => ({
+jest.mock("../../../repositories/moviesRepository", () => ({
     fetchPopular: jest.fn(),
     posterUrl: jest.fn(path =>
         path ? `https://image.tmdb.org/t/p/w500${path}` : null
     )
+}))
+
+jest.mock("../hooks/useDetailsNavigation", () => ({
+    useDetailsNavigation: () => ({
+        openMovieDetails: jest.fn()
+    })
 }))
 
 describe("Home", () => {

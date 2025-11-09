@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react"
 import { Alert } from "react-native"
 
-import { Movie } from "../../domain/types"
-import { movieRepository } from "../../repositories/moviesRepository"
+import { Movie } from "../../../domain/types"
+import { movieRepository } from "../../../repositories/moviesRepository"
 
 export function useHomeViewModel() {
     const [popular, setPopular] = useState<Movie[]>([])

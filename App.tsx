@@ -5,10 +5,16 @@
  * @format
  */
 
+import "react-native-gesture-handler"
+
+import React from "react"
 import { StatusBar, StyleSheet, useColorScheme, View } from "react-native"
 import { SafeAreaProvider } from "react-native-safe-area-context"
+import { enableScreens } from "react-native-screens"
 
-import { Home } from "./src/home"
+import Routes from "./src/navigation/routes"
+
+enableScreens()
 
 function App() {
     const isDarkMode = useColorScheme() === "dark"
@@ -26,7 +32,7 @@ function App() {
 function AppContent() {
     return (
         <View style={styles.container}>
-            <Home />
+            <Routes />
         </View>
     )
 }
